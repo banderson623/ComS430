@@ -2,6 +2,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.concurrent.Callable;
+import java.util.concurrent.FutureTask;
 
 public class UI extends JPanel { 
     private RouteCalculator rc;
@@ -76,19 +78,28 @@ public class UI extends JPanel {
     // listener attached to confirmDestinationButton...
     private class DestinationButtonListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
-          nextTurn.setText("Calculating new route...");
-          String routeString = routeText.getText();
-          try
-          {
-            int dest = Integer.parseInt(routeString);
-            currentDestination = new Position(dest);
-            confirmDestinationButton.setEnabled(false);
-            rc.calculateRoute(currentDestination);
-          }
-          catch (NumberFormatException nfe)
-          {
-            // do nothing
-          }
+            // Update the UI immediately...
+        nextTurn.setText("Calculating new route...");
+        final String routeString = routeText.getText();
+        try
+        {
+            FutureTask<String> future = new FutureTask<String>(new Callable<String>()
+            {
+                public String call()
+                {
+                    int dest = Integer.parseInt(routeString);
+                    currentDestination = new Position(dest);
+                    confirmDestinationButton.setEnabled(false);
+                    rc.calculateRoute(currentDestination);
+                    return "success";
+                }
+            });
+            future.run();
+        }
+        catch (NumberFormatException nfe)
+        {
+        // do nothing
+        }
         }
     }
     
