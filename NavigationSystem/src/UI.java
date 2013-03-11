@@ -2,8 +2,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.concurrent.Callable;
-import java.util.concurrent.FutureTask;
 
 public class UI extends JPanel { 
     private RouteCalculator rc;
@@ -66,6 +64,7 @@ public class UI extends JPanel {
 
     public void setNewRoute(Route r)
     {
+        System.out.println("Calling new route with r: " + r);
         currentRoute = r;
         confirmDestinationButton.setEnabled(true);
         repaint();
@@ -80,21 +79,18 @@ public class UI extends JPanel {
         public void actionPerformed(ActionEvent e) {
             // Update the UI immediately...
         nextTurn.setText("Calculating new route...");
-        final String routeString = routeText.getText();
+            
+        String routeString = routeText.getText();
         try
         {
-            FutureTask<String> future = new FutureTask<String>(new Callable<String>()
-            {
-                public String call()
-                {
-                    int dest = Integer.parseInt(routeString);
-                    currentDestination = new Position(dest);
-                    confirmDestinationButton.setEnabled(false);
-                    rc.calculateRoute(currentDestination);
-                    return "success";
-                }
-            });
-            future.run();
+            GetRouteCalculationWorker rcWorker = new GetRouteCalculationWorker(routeString);
+            rcWorker.execute();
+
+//            int dest = Integer.parseInt(routeString);
+//            currentDestination = new Position(dest);
+//            confirmDestinationButton.setEnabled(false);
+//            rc.calculateRoute(currentDestination);
+
         }
         catch (NumberFormatException nfe)
         {
@@ -110,6 +106,7 @@ public class UI extends JPanel {
     {
         public void paintComponent(Graphics g)
         {
+            System.out.println("Calling paintComponent");
           Graphics2D g2 = (Graphics2D) g;
           g2.setBackground(Color.WHITE);
           g2.clearRect(0, 0, getWidth(), getHeight());
@@ -122,6 +119,53 @@ public class UI extends JPanel {
           g2.drawString(dest, 30, 60);
           g2.drawString(route, 30, 90);
             
+        }
+    }
+
+    /**
+     * Added a new class that will execute the new route calculation
+     * in a separate swing-friendly thread so the User Interface does not block
+     *
+     * Fun.
+     */
+    private class GetRouteCalculationWorker extends SwingWorker<String, Object> {
+        private final String routeString;
+        private boolean wasSuccessful;
+
+        public GetRouteCalculationWorker(String route)
+        {
+            super();    // Call SwingWorker's parent method
+            routeString = route;
+            wasSuccessful = false;
+        }
+
+        @Override
+        public String doInBackground()
+        {
+            try
+            {
+                int destinationAsInteger = Integer.parseInt(routeString);
+                currentDestination = new Position(destinationAsInteger);
+                confirmDestinationButton.setEnabled(false);
+                rc.calculateRoute(currentDestination);
+            }
+            catch (Exception err)
+            {
+                System.out.println("Error: " + err.getMessage());
+            }
+
+            finally
+            {
+                return "Done doInBackground";
+            }
+        }
+
+        @Override
+        protected void done() {
+//            try {
+////                label.setText(get());
+//            } catch (Exception ignore) {
+//            }
         }
     }
 }

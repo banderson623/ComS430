@@ -5,9 +5,9 @@ public class NavSystem
 {
   public static void main(String[] args)
   {
-    final ManeuverGen mg = new ManeuverGen();
-    FakeDataGenerator gen = new FakeDataGenerator();
-    final RouteCalculator rc = new RouteCalculator(mg, gen);
+    final ManeuverGen manueverGenerator = new ManeuverGen();
+    FakeDataGenerator dataGenerator = new FakeDataGenerator();
+    final RouteCalculator rc = new RouteCalculator(manueverGenerator, dataGenerator);
     
     // create and start UI...
     Runnable r = new Runnable()
@@ -15,12 +15,11 @@ public class NavSystem
       public void run()
       {
         UI ui = UI.createAndShow(rc);
-        mg.attachUI(ui);
+        manueverGenerator.attachUI(ui);
       }
     };
     SwingUtilities.invokeLater(r);
-
-    new GPS(mg, gen).start();
+    new GPS(manueverGenerator, dataGenerator).start();
   }
 }
 
