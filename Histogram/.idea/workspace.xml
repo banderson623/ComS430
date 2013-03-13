@@ -7,7 +7,7 @@
     <file path="/fragment.java" changelist="b673d2e5-b1ee-4064-ad5d-15e790101a67" time="1363139591293" ignored="false" />
     <file path="/a.java" changelist="b673d2e5-b1ee-4064-ad5d-15e790101a67" time="1363099141928" ignored="false" />
     <file path="/sample.java" changelist="b673d2e5-b1ee-4064-ad5d-15e790101a67" time="1363099146805" ignored="false" />
-    <file path="/Histogram.java" changelist="b673d2e5-b1ee-4064-ad5d-15e790101a67" time="1363139505692" ignored="false" />
+    <file path="/Histogram.java" changelist="b673d2e5-b1ee-4064-ad5d-15e790101a67" time="1363145131000" ignored="false" />
     <option name="TRACKING_ENABLED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -57,22 +57,6 @@
       </breakpoint>
     </breakpoint_any>
     <ui_properties default_suspend_policy="SuspendAll" default_condition_enabled="true" />
-    <line_breakpoints>
-      <breakpoint url="file://$PROJECT_DIR$/src/Histogram.java" line="85" class="Histogram" package="">
-        <option name="ENABLED" value="true" />
-        <option name="LOG_ENABLED" value="false" />
-        <option name="LOG_EXPRESSION_ENABLED" value="false" />
-        <option name="SUSPEND_POLICY" value="SuspendAll" />
-        <option name="SUSPEND" value="true" />
-        <option name="COUNT_FILTER_ENABLED" value="false" />
-        <option name="COUNT_FILTER" value="0" />
-        <option name="CONDITION_ENABLED" value="true" />
-        <option name="CLASS_FILTERS_ENABLED" value="false" />
-        <option name="INSTANCE_FILTERS_ENABLED" value="false" />
-        <option name="CONDITION" value="" />
-        <option name="LOG_MESSAGE" value="" />
-      </breakpoint>
-    </line_breakpoints>
     <breakpoint_rules />
     <ui_properties />
   </component>
@@ -85,11 +69,10 @@
       <file leaf-file-name="Histogram.java" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/Histogram.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="112" column="5" selection-start="2945" selection-end="2946" vertical-scroll-proportion="-3.0342467">
+            <state line="17" column="36" selection-start="0" selection-end="5641" vertical-scroll-proportion="0.5410385">
               <folding>
                 <element signature="imports" expanded="true" />
-                <element signature="e#4418#4455#0" expanded="true" />
-                <element signature="e#6876#6894#0" expanded="true" />
+                <element signature="e#3060#3077#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -364,7 +347,7 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="29" y="77" width="1501" height="1220" extended-state="0" />
-    <editor active="false" />
+    <editor active="true" />
     <layout>
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
       <window_info id="JetGradle" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
@@ -379,7 +362,7 @@
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="true" content_ui="tabs" />
       <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.24948454" sideWeight="0.5681818" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.24948454" sideWeight="0.5681818" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.4318182" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
@@ -501,11 +484,10 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/Histogram.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="112" column="5" selection-start="2945" selection-end="2946" vertical-scroll-proportion="-3.0342467">
+        <state line="17" column="36" selection-start="0" selection-end="5641" vertical-scroll-proportion="0.5410385">
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="e#4418#4455#0" expanded="true" />
-            <element signature="e#6876#6894#0" expanded="true" />
+            <element signature="e#3060#3077#0" expanded="true" />
           </folding>
         </state>
       </provider>

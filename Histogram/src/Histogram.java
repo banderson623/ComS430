@@ -19,7 +19,7 @@ public class Histogram
 
         // YMMV, adjust this number as you see fit
 //        char[] text = generate(1000000000);
-        char[] text = generate(10000000);
+        char[] text = generate(100000000);
 
         Histogram h = new Histogram();
 
@@ -30,7 +30,6 @@ public class Histogram
         long elapsed = System.currentTimeMillis() - start;
         System.out.println("time: " + elapsed);
 
-        System.out.println("-------------------------------------------");
         h.reset();
         System.gc();
         System.out.println("Starting...");
@@ -39,7 +38,7 @@ public class Histogram
         elapsed = System.currentTimeMillis() - start;
         System.out.println("time: " + elapsed);
 
-        //h.display();
+        h.display();
     }
 
     /**
@@ -62,42 +61,14 @@ public class Histogram
     /**
      * Displays histogram contents.
      */
+    /**
+     * Displays histogram contents.
+     */
     public void display()
     {
-        final int maxWidth = 100;
-        // find normalizing value
-        int maxResult = -1;
-        int minResult = Integer.MAX_VALUE;
-        int sum = 0;
-
-        for (int i = 0; i < results.length; ++i)
+        for(int i = 0; i < results.length; ++i)
         {
-            if (results[i] > maxResult)
-                maxResult = results[i];
-
-            if (results[i] < minResult)
-                minResult = results[i];
-
-            sum += results[i];
-        }
-        // oops
-        if(minResult == 0) minResult++;
-
-        int simpleDeviation = maxResult - minResult;
-        System.out.println("Max: " + maxResult + ", \nMin: " + minResult + ",\ndiff:" + simpleDeviation );
-        //int mean = (int)(sum / results.length);
-
-        for (int i = 0; i < results.length; ++i)
-        {
-            char toPrint = ' ';
-            if (i > 32){
-                toPrint = (char)i;
-            }
-            int normalizedAggressive = (int)((results[i] - minResult + (simpleDeviation/minResult)) * ((float)maxWidth/(float)maxResult));
-
-            System.out.print("\n" + toPrint  + ": " + results[i] + ":\t");
-            for(int j = 0; j < normalizedAggressive; j++) System.out.print('*');
-
+            System.out.println(results[i]);
         }
     }
 
@@ -128,8 +99,6 @@ public class Histogram
         //        such as I/O or something with a waiting time not determined
         //        by calculation/cpu.)
         int numberOfThreadsToUse = Runtime.getRuntime().availableProcessors();
-        numberOfThreadsToUse=1;
-        System.out.println("Using " + numberOfThreadsToUse + " thread(s).");
 
         // Initialize the thread pool that we are going to use
         ExecutorService pool = Executors.newFixedThreadPool(numberOfThreadsToUse);
@@ -137,36 +106,31 @@ public class Histogram
                                            // I don't know the java default rounding rules
                                            // So I'll force it my way.
         final int charactersPerPartition = (int) Math.floor(text.length / numberOfThreadsToUse);
-
-        // Yeah I know, typedef's would be amazing here. I won't rant about this though..
-        //  anyway, here is what we have in java instead... :)
-        List<Callable<HashMap<Integer, Integer>>> tasks = new ArrayList<Callable<HashMap<Integer, Integer>>>();
+        List<Callable<int[]>> tasks = new ArrayList<Callable<int[]>>();
 
         try
         {
             // I have all my partitions set up, and will make Worker objects out of them
             for(int partitionSegment = 0; partitionSegment < numberOfThreadsToUse; partitionSegment++)
             {
-                final int partitionStartsAt = partitionSegment * charactersPerPartition;
-                char[] myLittlePartition = new char[charactersPerPartition];
-                //This is neat, IntelliJ just made my for loop into some cool arraycopy call
-                System.arraycopy(text, 0 + partitionStartsAt, myLittlePartition, 0, charactersPerPartition);
-                tasks.add(new Worker(myLittlePartition));
+                int partitionStartsAt = partitionSegment * charactersPerPartition;
+                tasks.add(new Worker(text,partitionStartsAt, (partitionStartsAt + charactersPerPartition)));
 
             }
             try
             {
                 // Now I am going to add them all to my thread pool.
-                List<Future<HashMap<Integer, Integer>>> results = pool.invokeAll(tasks);
-
+                List<Future<int[]>> results = pool.invokeAll(tasks);
                 // Now I should block to wait for them all to count the partitions
-                for(Future<HashMap<Integer, Integer>> partition : results)
+                for(Future<int[]> partition : results)
                 {
                     // Block, to wait for results
-                    HashMap<Integer, Integer> bag = partition.get();
+                    int[] bag = partition.get();
+
                     // Merge the bag into the results
-                    for(int i = 0; i < this.results.length; ++i){
-                        this.results[i] = bag.get(i);
+                    for(int i = 0; i < this.results.length; ++i)
+                    {
+                        this.results[i] = bag[i];
                     }
                 }
 
@@ -189,40 +153,35 @@ public class Histogram
     }
 
     // It will return an array list of integers
-    private class Worker implements Callable<HashMap<Integer, Integer>>
+    private class Worker implements Callable<int[]>
     {
-        private char[] myTextToWorkOn;
+        private char[] charsToWorkOn;
+        private int startAt;
+        private int stopAt;
 
-        public Worker(char[] myTextToWorkOn)
+        public Worker(char[] text, int indexToStartAt, int indexToEndAt)
         {
-            this.myTextToWorkOn = myTextToWorkOn;
+            charsToWorkOn = text;
+            startAt = indexToStartAt;
+            stopAt = indexToEndAt;
         }
 
         @Override
-        public HashMap<Integer, Integer> call()
+        public int[] call()
         {
-            HashMap<Integer, Integer> myResultsBaggie = new HashMap<Integer, Integer>(myTextToWorkOn.length);
-            for (int i = 0; i < 127; ++i)
+            int[] output = new int[128];
+            for (int i = startAt; i < stopAt; ++i)
             {
-                myResultsBaggie.put(i,0); // Initialize the hash
-            }
-
-            int sumOfCharactersOver126 = 0;
-            for (int i = 0; i < myTextToWorkOn.length; ++i)
-            {
-                int ch = myTextToWorkOn[i];
+                int ch = charsToWorkOn[i];
                 if (ch >= 127){
-                    // No need to do get/set on the hashmap, just a set once for all of these
-                    sumOfCharactersOver126++;
+                    output[127]++;
                 }
                 else
                 {
-                    myResultsBaggie.put(ch, myResultsBaggie.get(ch) + 1);
+                    output[ch]++;
                 }
             }
-            // clever, right?
-            myResultsBaggie.put(127, sumOfCharactersOver126);
-            return myResultsBaggie;
+            return output;
         }
     }
 }
