@@ -134,13 +134,12 @@ public class Histogram
             }
 
             // Now I am going to add them all to my thread pool.
+            //                                  and invokeAll() will block until
+            //                                  all the callable's are done.
             List<Future<int[]>> results = pool.invokeAll(tasks);
-            // Now I should block to wait for them all to count the partitions
             for(Future<int[]> partition : results)
             {
-                // Block, to wait for results
                 int[] bag = partition.get();
-
                 // Merge the bag into the results
                 for(int i = 0; i < this.results.length; ++i)
                 {
