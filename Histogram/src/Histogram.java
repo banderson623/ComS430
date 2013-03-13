@@ -1,5 +1,6 @@
-import java.math.BigInteger;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 import java.util.concurrent.*;
 
 /**
@@ -12,15 +13,19 @@ public class Histogram
      */
     private int[] results = new int[128];
 
+    // After a little bit of testing, I realized that doing the thread and thread pool
+    // only added overhead for character lengths less than about 10,000 on my
+    // 8 core - Core i7 processor. I am sure this number is different
+    // per architecture and CPU.
+    private int doNotMultiThreadIfLessThan = 1000;
+
     public static void main(String[] args)
     {
 
         System.out.println("Generating some data...");
 
         // YMMV, adjust this number as you see fit
-//        char[] text = generate(1000000000);
-        char[] text = generate(100000000);
-
+        char[] text = generate(1000000);
         Histogram h = new Histogram();
 
         System.gc();
@@ -91,6 +96,15 @@ public class Histogram
      */
     public void process(final char[] text)
     {
+        // After a little bit of testing, I realized that doing the thread and thread pool
+        // only added overhead for character lengths less than about 10,000 on my
+        // 8 core - Core i7 processor. I am sure this number is different
+        // per architecture and CPU.
+        if(text.length < this.doNotMultiThreadIfLessThan){
+            Worker smallSet = new Worker(text,0,text.length);
+            results = smallSet.call(); // blocking, and normal – single thread.
+            return;
+        }
 
         // One Thread per processor seems about right since this is purely CPU bound,
         // and there is no reason to make more threads than processors/cores.
@@ -99,15 +113,16 @@ public class Histogram
         //        such as I/O or something with a waiting time not determined
         //        by calculation/cpu.)
         int numberOfThreadsToUse = Runtime.getRuntime().availableProcessors();
-
         // Initialize the thread pool that we are going to use
         ExecutorService pool = Executors.newFixedThreadPool(numberOfThreadsToUse);
 
                                            // I don't know the java default rounding rules
                                            // So I'll force it my way.
         final int charactersPerPartition = (int) Math.floor(text.length / numberOfThreadsToUse);
+        // This is my lists that I use to hold a reference to my works
+        // this way I can walk through it and make sure they are all complete
+        // and I can get the data out of before moving on.
         List<Callable<int[]>> tasks = new ArrayList<Callable<int[]>>();
-
         try
         {
             // I have all my partitions set up, and will make Worker objects out of them
@@ -117,38 +132,28 @@ public class Histogram
                 tasks.add(new Worker(text,partitionStartsAt, (partitionStartsAt + charactersPerPartition)));
 
             }
-            try
+
+            // Now I am going to add them all to my thread pool.
+            List<Future<int[]>> results = pool.invokeAll(tasks);
+            // Now I should block to wait for them all to count the partitions
+            for(Future<int[]> partition : results)
             {
-                // Now I am going to add them all to my thread pool.
-                List<Future<int[]>> results = pool.invokeAll(tasks);
-                // Now I should block to wait for them all to count the partitions
-                for(Future<int[]> partition : results)
+                // Block, to wait for results
+                int[] bag = partition.get();
+
+                // Merge the bag into the results
+                for(int i = 0; i < this.results.length; ++i)
                 {
-                    // Block, to wait for results
-                    int[] bag = partition.get();
-
-                    // Merge the bag into the results
-                    for(int i = 0; i < this.results.length; ++i)
-                    {
-                        this.results[i] = bag[i];
-                    }
+                    this.results[i] = bag[i];
                 }
-
-                System.out.println("All done!");
-
-            } catch (InterruptedException ignored) {
-                System.out.println("Something went wrong: " + ignored);
-                ignored.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-            } catch (ExecutionException ignored)
-            {
-                ignored.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
             }
-            pool.shutdown();
-
         }
+        catch (InterruptedException ignored) {ignored.printStackTrace();}
+        catch (ExecutionException ignored)   {ignored.printStackTrace();}
+
         finally
         {
-            // Need to close out all of our threads
+            pool.shutdown();
         }
     }
 
