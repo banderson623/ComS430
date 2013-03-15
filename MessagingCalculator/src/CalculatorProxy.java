@@ -8,7 +8,7 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -45,7 +45,7 @@ public class CalculatorProxy implements IAsyncCalculator
   }
   
   @Override
-  public void incrementAsync(int i, ICallback callback)
+  public synchronized void incrementAsync(int i, ICallback callback)
   {
     int id = getNextId();
     String request = "increment " + i; 
@@ -66,10 +66,13 @@ public class CalculatorProxy implements IAsyncCalculator
   }
 
   @Override
-  public Future<Integer> increment(int n)
+  public Future<Integer> increment(final int n)
   {
-    // TODO
-    return null;
+      ResponseCallBackHandler handlerAndFuture = new ResponseCallBackHandler();
+      incrementAsync(n, handlerAndFuture);
+
+      return handlerAndFuture;
+
   }
   
   /**
@@ -136,6 +139,74 @@ public class CalculatorProxy implements IAsyncCalculator
       // TODO   
     }
   }
+
+
+
+    private class ResponseCallBackHandler implements ICallback, Future<Integer> {
+        private int valueReturned = Integer.MIN_VALUE;
+        private Exception exceptionReturned;
+
+        @Override
+        public synchronized void asyncResult(int result)
+        {
+            valueReturned = result;
+        }
+
+        @Override
+        public synchronized void asyncException(Exception e)
+        {
+            exceptionReturned = e;
+        }
+
+        @Override /* this does nothing */
+        public synchronized boolean cancel(boolean b)
+        {
+            exceptionReturned = new InterruptedException("You canceled it.");
+            return true;
+        }
+
+        @Override
+        public boolean isCancelled()
+        {
+            return false;
+        }
+
+        @Override
+        public synchronized boolean isDone()
+        {
+            return (this.valueReturned != Integer.MIN_VALUE ||
+                    this.exceptionReturned != null);
+        }
+
+        @Override
+        public Integer get() throws InterruptedException, ExecutionException
+        {
+            // block until this is returned
+            while(!isDone()){
+                Thread.sleep(1000); // be reasonable
+            }
+            if(this.exceptionReturned != null)
+            {
+                // There has got to be a better way to do this.
+                if(exceptionReturned.getClass() == (new InterruptedException()).getClass())
+                {
+                    throw (InterruptedException) exceptionReturned;
+                }
+                else
+                {
+                    throw (ExecutionException) exceptionReturned;
+                }
+            }
+
+            return valueReturned;
+        }
+
+        @Override
+        public Integer get(long l, TimeUnit timeUnit) throws InterruptedException, ExecutionException, TimeoutException
+        {
+            return null;  //To change body of implemented methods use File | Settings | File Templates.
+        }
+    }
 
 }
 
